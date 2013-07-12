@@ -85,22 +85,14 @@ def stupid_find(root):
     return file_list
 
 
-def bundle_list(root, *exclude_dirs):
+def bundle_list(out, root):
     """list files to bundle at root
     ...minus those that start in exclusions
     ...minus anything not a .lua unless in static
     ...and minus the paths in static that are in exclusions"""
     file_list = []
-    exclude_dir_list = [ os.path.normpath(d) + os.path.sep for d in exclude_dirs ]
     # its easier to generate a list of stuff to ignore based on how os.walk works
     for base_path, _, files in os.walk(root):
-
-        is_excluded = False
-        for ed in exclude_dir_list:
-            if base_path.startswith(ed):
-                is_excluded = True
-        if is_excluded:
-            continue
 
         for f in files:
             file_path = os.path.join(base_path, f)
@@ -109,15 +101,17 @@ def bundle_list(root, *exclude_dirs):
                 continue
             rel_path = os.path.relpath(file_path, root)
             split_path = _split_path(rel_path)
-            # skip if not in static and not a .lua
             name, extension = os.path.splitext(f)
             abs_path = os.path.abspath(file_path)
-            if split_path[0] != "static" and extension != ".lua":
+            # skip if not a .lua
+            if extension != ".lua":
                 continue
-            if name in [".git", ".gitignore", ".gitmodules"]:
-                continue
-            file_list.append("'%s'" % os.path.relpath(rel_path, 'HACK_DIRECTORY'))
-    # raise Exception(file_list)
+            file_list.append("'%s'" % abs_path) # os.path.relpath(abs_path, root))
+
+    log = os.open('/tmp/testlog', os.O_APPEND | os.O_RDWR)
+    os.write(log, "%s\n" % root)
+    os.write(log, "----------------\n\n")
+    os.write(log, "%s\n" % file_list)
     return file_list
 
 
@@ -152,6 +146,8 @@ class VirgoZip(zipfile.ZipFile):
 
 
 def make_bundle(root, bundle_version, out, *files):
+    print "SONGGAO"
+    print root, out
     z = VirgoZip(root, out)
 
     for lua in files:
