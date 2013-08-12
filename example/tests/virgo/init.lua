@@ -20,7 +20,7 @@ local fs = require('fs')
 local path = require('path')
 
 local async = require('async')
-local vutils = require('virgo_utils')
+local utile = require('utile')
 
 local exports = {}
 local Error = core.Error;
@@ -51,8 +51,8 @@ end
 
 exports['test_vtime'] = function(test, asserts)
   for k, v in pairs(times) do
-    vutils.timesync(v[1], v[2], v[3], v[4])
-    asserts.ok(vutils.getDelta() == v[5])
+    utile.timesync(v[1], v[2], v[3], v[4])
+    asserts.ok(utile.getDelta() == v[5])
   end
   test.done()
 end

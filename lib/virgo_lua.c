@@ -274,7 +274,7 @@ virgo__lua_init(virgo_t *v)
 
 
   lua_getglobal(L, "require");
-  lua_pushliteral(L, "virgo_utils");
+  lua_pushliteral(L, "utile");
   lua_call(L, 1, 1);
 
   lua_getglobal(L, "require");

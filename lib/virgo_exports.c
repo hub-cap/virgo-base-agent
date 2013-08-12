@@ -6,7 +6,7 @@ const void *virgo_ugly_hack = NULL;
 extern const char *luaJIT_BC_virgo_debugger[];
 extern const char *luaJIT_BC_virgo_init[];
 extern const char *luaJIT_BC_machineidentity[];
-extern const char *luaJIT_BC_virgo_utils[];
+extern const char *luaJIT_BC_utile[];
 
 const void *virgo__suck_in_symbols(void)
 {
@@ -15,7 +15,7 @@ const void *virgo__suck_in_symbols(void)
   (size_t)(const char *)luaJIT_BC_virgo_debugger +
   (size_t)(const char *)luaJIT_BC_virgo_init +
   (size_t)(const char *)luaJIT_BC_machineidentity +
-  (size_t)(const char *)luaJIT_BC_virgo_utils;
+  (size_t)(const char *)luaJIT_BC_utile;
 
   return virgo_ugly_hack;
 }
