@@ -62,6 +62,7 @@
         'VIRGO_VERSION="<(VIRGO_HEAD_SHA)"',
         'VERSION_FULL="<(VERSION_FULL)"',
         'PKG_NAME="<(PKG_NAME)"',
+        'PREFIX="<(PREFIX)"',
         'BUNDLE_NAME="<(BUNDLE_NAME)"',
         'SHORT_NAME="<(SHORT_NAME)"',
       ],

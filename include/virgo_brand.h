@@ -77,6 +77,7 @@
   ".zip"
 
 #define VIRGO_DEFAULT_ZIP_UNIX_PATH \
+  PREFIX \
   "/usr/share/" \
   VIRGO_DEFAULT_NAME \
   "/" VIRGO_DEFAULT_ZIP_FILENAME
