@@ -126,7 +126,7 @@ globalCtx:set('DEFAULT_PID_FILE_PATH', '/var/run/rackspace-monitoring-agent.pid'
 -- Custom plugins related settings
 
 globalCtx:set('DEFAULT_CUSTOM_PLUGINS_PATH', path.join(LIBRARY_DIR, 'plugins'))
-globalCtx:set('DEFAULT_PLUGIN_TIMEOUT', 60 * 1000)
+globalCtx:set('DEFAULT_PLUGIN_TIMEOUT', 180 * 1000)
 globalCtx:set('PLUGIN_TYPE_MAP', {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'})
 
 globalCtx:set('CRASH_REPORT_URL', 'https://monitoring.api.rackspacecloud.com/agent-crash-report')
