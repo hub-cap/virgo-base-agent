@@ -39,7 +39,7 @@
             'MultiProcessorCompilation': 'true'
           },
           'VCLinkerTool': {
-            'LinkIncremental': 2, # enable incremental linking
+            'LinkIncremental': 1, # enable incremental linking
           },
         },
       },
