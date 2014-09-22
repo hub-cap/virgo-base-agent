@@ -420,7 +420,7 @@ function downloadUpgradeWin(streams, version, callback)
   local s = sigar:new():sysinfo()
   local payload = fmt('%s-%s.msi', virgo.default_name, s.arch):lower()
 
-  async.waterfall({
+  async.series({
     function(callback)
       mkdirp(unverified_binary_dir, callback)
     end,
@@ -431,6 +431,17 @@ function downloadUpgradeWin(streams, version, callback)
         permissions = tonumber('755', 8)
       }
       download_iter(files, callback)
+    end,
+    function(callback)
+      -- check for trust and rackspace
+      local signer
+      local status, err = pcall(function()
+         signer = virgo.fetch_msi_signature(path.join(unverified_binary_dir, payload))
+      end)
+      if signer then
+        client:log(logging.INFO, fmt('Trusted and signed by: %s', signer))
+      end
+      callback(err)
     end
   }, function(err)
     if err then

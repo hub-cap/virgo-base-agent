@@ -43,6 +43,7 @@
                 '-lnetapi32.lib',
                 '-lShlwapi.lib',
                 '-lGdi32.lib',
+                '-lCrypt32.lib',
                 '-lMsi.lib',
                 '-lUser32.lib'
             ],
