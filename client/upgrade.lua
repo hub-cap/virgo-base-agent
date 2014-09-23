@@ -433,7 +433,7 @@ function downloadUpgradeWin(streams, version, callback)
       download_iter(files, callback)
     end,
     function(callback)
-      -- check for trust and rackspace
+      -- check for valid signature and its trust
       local signer
       local status, err = pcall(function()
          signer = virgo.fetch_msi_signature(path.join(unverified_binary_dir, payload))

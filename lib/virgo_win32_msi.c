@@ -90,7 +90,7 @@ int virgo__lua_fetch_msi_signature(lua_State *L)
   UINT ret;
   HANDLE hFile;
   MSIHANDLE hProduct;
-  CERT_CONTEXT cert_context; 
+  PCERT_CONTEXT pcert_context;
   LPSTR pszSigner = NULL;
   DWORD dwSizeSigner = 0;
 
@@ -103,10 +103,11 @@ int virgo__lua_fetch_msi_signature(lua_State *L)
   {
     LPSTR errorMsg = NULL;
     DWORD err = GetLastError();
-    int ret;
+    int lret;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER, NULL, err, 0, (LPSTR)&errorMsg, 0, NULL);
-    ret = luaL_error(L, "msi open failed: %s ; %d, %s", msi, err, errorMsg);
+    lret = luaL_error(L, "msi open failed: %s ; %d, %s", msi, err, errorMsg);
     LocalFree(errorMsg);
+    return lret;
   }
   CloseHandle(hFile);
 
@@ -116,27 +117,69 @@ int virgo__lua_fetch_msi_signature(lua_State *L)
     return luaL_error(L, "msi open package failed");
   }
 
-  ret = MsiGetFileSignatureInformation(msi, MSI_INVALID_HASH_IS_FATAL, &cert_context, NULL, NULL);
+  ret = MsiGetFileSignatureInformation(msi, MSI_INVALID_HASH_IS_FATAL, &pcert_context, NULL, NULL);
 
   if (ret != ERROR_SUCCESS)
   {
+    LPSTR errorMsg = NULL;
+    DWORD err = HRESULT_CODE(ret);
+    int lret;
+    switch (ret)
+    {
+    case ERROR_INVALID_PARAMETER:
+      errorMsg = "Invalid parameter was specified.";
+      break;
+    case ERROR_FUNCTION_FAILED:
+      errorMsg = "WinVerifyTrust is not available on the system. MsiGetFileSignatureInformation requires the presence of the Wintrust.dll file on the system.";
+      break;
+    case ERROR_MORE_DATA:
+      errorMsg = "A buffer is too small to hold the requested data. If ERROR_MORE_DATA is returned, pcbHashData gives the size of the buffer required to hold the hash data.";
+      break;
+    case TRUST_E_NOSIGNATURE:
+      errorMsg = "File is not signed";
+      break;
+    case TRUST_E_BAD_DIGEST:
+      errorMsg = "The file's current hash is invalid according to the hash stored in the file's digital signature.";
+      break;
+    case CERT_E_REVOKED:
+      errorMsg = "The file's signer certificate has been revoked. The file's digital signature is compromised.";
+      break;
+    case TRUST_E_SUBJECT_NOT_TRUSTED:
+      errorMsg = "The subject failed the specified verification action. Most trust providers return a more detailed error code that describes the reason for the failure.";
+      break;
+    case TRUST_E_PROVIDER_UNKNOWN:
+      errorMsg = "The trust provider is not recognized on this system.";
+      break;
+    case TRUST_E_ACTION_UNKNOWN:
+      errorMsg = "The trust provider does not support the specified action.";
+      break;
+    case TRUST_E_SUBJECT_FORM_UNKNOWN:
+      errorMsg = "The trust provider does not support the form specified for the subject.";
+      break;
+    default:
+      errorMsg = "Unknown error";
+      break;
+    }
+    lret = luaL_error(L, "msi get file signature info failed: %s ; %d, %s", msi, err, errorMsg);
     MsiCloseHandle(hProduct);
-    return luaL_error(L, "msi get file signature info failed, %d", ret);
+    return lret;
   }
 
   MsiCloseHandle(hProduct);
 
-  dwSizeSigner = CertGetNameString(&cert_context, CERT_NAME_FRIENDLY_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSigner, dwSizeSigner);
+  dwSizeSigner = CertGetNameString(pcert_context, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSigner, dwSizeSigner);
   if (dwSizeSigner <= 1)
   {
+    CertFreeCertificateContext(pcert_context);
     return luaL_error(L, "cert get name string failed");
   }
 
   pszSigner = (LPSTR)malloc(dwSizeSigner);
 
-  CertGetNameString(&cert_context, CERT_NAME_FRIENDLY_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSigner, dwSizeSigner);
+  CertGetNameString(pcert_context, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSigner, dwSizeSigner);
 
   lua_pushlstring(L, pszSigner, dwSizeSigner);
+  CertFreeCertificateContext(pcert_context);
   free(pszSigner);
   return 1;
 }
